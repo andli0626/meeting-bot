@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新点OA周例会自动化 - 安装与使用指南</title>
+<style>
+  :root {
+    --primary: #1890ff;
+    --primary-dark: #096dd9;
+    --success: #237804;
+    --warning: #d48806;
+    --danger: #cf1322;
+    --bg: #f5f7fa;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --text-secondary: #666;
+    --border: #e8e8e8;
+    --code-bg: #f6f8fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    padding: 20px;
+  }
+  .container { max-width: 960px; margin: 0 auto; }
+  header {
+    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+    color: #fff;
+    padding: 48px 40px;
+    border-radius: 16px;
+    margin-bottom: 32px;
+    box-shadow: 0 8px 32px rgba(24,144,255,0.2);
+  }
+  header h1 { font-size: 32px; margin-bottom: 12px; font-weight: 700; }
+  header .subtitle { font-size: 16px; opacity: 0.9; margin-bottom: 16px; }
+  header .meta { display: flex; gap: 24px; flex-wrap: wrap; font-size: 14px; opacity: 0.85; }
+  header .meta span { display: flex; align-items: center; gap: 6px; }
+
+  nav {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 32px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    position: sticky;
+    top: 8px;
+    z-index: 100;
+  }
+  nav h3 { font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; font-weight: 500; }
+  nav ul { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+  nav a {
+    display: inline-block;
+    padding: 6px 14px;
+    background: var(--bg);
+    color: var(--text);
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 13px;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+  }
+  nav a:hover { background: var(--primary); color: #fff; }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .card h2 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card h3 { font-size: 17px; margin: 24px 0 12px; color: var(--text); }
+  .card h4 { font-size: 15px; margin: 16px 0 8px; color: var(--text); }
+  .card p { margin-bottom: 12px; color: var(--text); }
+  .card ul, .card ol { margin: 12px 0 12px 24px; }
+  .card li { margin-bottom: 6px; }
+
+  .step-list { counter-reset: step; list-style: none; margin-left: 0 !important; }
+  .step-list li {
+    position: relative;
+    padding: 16px 16px 16px 56px;
+    margin-bottom: 12px;
+    background: var(--bg);
+    border-radius: 8px;
+    counter-increment: step;
+    min-height: 48px;
+  }
+  .step-list li::before {
+    content: counter(step);
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    width: 28px;
+    height: 28px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .alert {
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin: 16px 0;
+    font-size: 14px;
+    border-left: 4px solid;
+  }
+  .alert-info { background: #e6f7ff; border-color: var(--primary); color: #0050b3; }
+  .alert-warning { background: #fffbe6; border-color: #faad14; color: #d48806; }
+  .alert-danger { background: #fff2f0; border-color: #ff4d4f; color: #cf1322; }
+  .alert-success { background: #f6ffed; border-color: #52c41a; color: #237804; }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.6;
+    margin: 12px 0;
+    font-family: "Menlo", "Consolas", "Monaco", monospace;
+  }
+  code {
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: "Menlo", "Consolas", "Monaco", monospace;
+    border: 1px solid var(--border);
+  }
+  pre code { background: none; padding: 0; border: none; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  th { background: var(--bg); font-weight: 600; }
+  tr:hover td { background: #fafafa; }
+
+  .config-section {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 16px 0;
+  }
+  .config-section h4 { margin-top: 0; }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .feature-item {
+    background: var(--bg);
+    padding: 16px;
+    border-radius: 8px;
+    text-align: center;
+  }
+  .feature-item .icon { font-size: 28px; margin-bottom: 8px; }
+  .feature-item .name { font-size: 13px; font-weight: 500; }
+
+  .menu-list { list-style: none; margin-left: 0 !important; }
+  .menu-list li {
+    padding: 12px 16px;
+    background: var(--bg);
+    border-radius: 6px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .menu-list .cmd {
+    background: var(--primary);
+    color: #fff;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .flow-diagram {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 24px;
+    text-align: center;
+    margin: 20px 0;
+    overflow-x: auto;
+  }
+  .flow-diagram .flow {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: nowrap;
+  }
+  .flow-diagram .node {
+    background: #fff;
+    border: 2px solid var(--primary);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .flow-diagram .arrow { color: var(--primary); font-size: 18px; }
+
+  details {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    cursor: pointer;
+  }
+  details summary {
+    font-weight: 600;
+    font-size: 15px;
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  details summary::before { content: "▶"; font-size: 11px; transition: transform 0.2s; }
+  details[open] summary::before { transform: rotate(90deg); }
+  details .detail-content { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+
+  .version-badge {
+    display: inline-block;
+    background: var(--primary);
+    color: #fff;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  footer {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  @media (max-width: 640px) {
+    header { padding: 32px 24px; }
+    header h1 { font-size: 24px; }
+    .card { padding: 20px; }
+    nav { position: static; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>📋 新点OA周例会自动化</h1>
+  <p class="subtitle">Tampermonkey 用户脚本 —— 自动创建部门周例会：填写会议信息、选择参会人员、新增议题并保存草稿</p>
+  <div class="meta">
+    <span>📌 版本：<span class="version-badge">v1.6.1</span></span>
+    <span>👤 作者：CatPaw</span>
+    <span>🌐 适配：新点 OA (oa.epoint.com.cn)</span>
+    <span>📄 类型：用户脚本 (UserScript)</span>
+  </div>
+</header>
+
+<nav>
+  <h3>📑 目录导航</h3>
+  <ul>
+    <li><a href="#overview">功能概览</a></li>
+    <li><a href="#prerequisites">前置条件</a></li>
+    <li><a href="#install">安装步骤</a></li>
+    <li><a href="#config">配置说明</a></li>
+    <li><a href="#usage">使用指南</a></li>
+    <li><a href="#menu">菜单命令</a></li>
+    <li><a href="#troubleshooting">常见问题</a></li>
+    <li><a href="#changelog">更新日志</a></li>
+    <li><a href="#tech">技术细节</a></li>
+  </ul>
+</nav>
+
+<!-- 功能概览 -->
+<section class="card" id="overview">
+  <h2>一、功能概览</h2>
+  <p>本脚本是一个运行在 <strong>Tampermonkey（篡改猴）</strong> 浏览器扩展中的用户脚本，用于自动化新点 OA 平台的周例会创建流程。传统手动填写需要 10+ 步操作，使用本脚本后可一键完成。</p>
+
+  <div class="feature-grid">
+    <div class="feature-item">
+      <div class="icon">📝</div>
+      <div class="name">自动填写会议信息</div>
+    </div>
+    <div class="feature-item">
+      <div class="icon">👥</div>
+      <div class="name">按姓名选择参会人员</div>
+    </div>
+    <div class="feature-item">
+      <div class="icon">📌</div>
+      <div class="name">自动新增议题</div>
+    </div>
+    <div class="feature-item">
+      <div class="icon">💾</div>
+      <div class="name">一键保存草稿</div>
+    </div>
+    <div class="feature-item">
+      <div class="icon">📅</div>
+      <div class="name">智能推算会议期次</div>
+    </div>
+    <div class="feature-item">
+      <div class="icon">💻</div>
+      <div class="name">腾讯会议信息模板</div>
+    </div>
+  </div>
+
+  <h3>自动化流程</h3>
+  <div class="flow-diagram">
+    <div class="flow">
+      <div class="node">打开 OA</div>
+      <span class="arrow">→</span>
+      <div class="node">打开会议看板</div>
+      <span class="arrow">→</span>
+      <div class="node">新增会议</div>
+      <span class="arrow">→</span>
+      <div class="node">填写信息</div>
+      <span class="arrow">→</span>
+      <div class="node">选择人员</div>
+      <span class="arrow">→</span>
+      <div class="node">新增议题</div>
+      <span class="arrow">→</span>
+      <div class="node">保存草稿</div>
+    </div>
+  </div>
+
+  <h3>执行步骤详解</h3>
+  <table style="margin-top:12px;">
+    <thead>
+      <tr><th>步骤</th><th>名称</th><th>说明</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>验证页面加载与登录</td><td>检测登录页、校验页面标题</td></tr>
+      <tr><td>2</td><td>打开会议看板</td><td>点击「统一会议」→「我的会议」→ 等待看板 iframe 加载</td></tr>
+      <tr><td>3</td><td>点击新增会议</td><td>在看板 iframe 中点击 #btnAdd，等待表单 iframe 加载</td></tr>
+      <tr><td>4</td><td>填写会议信息</td><td>设置会议形式（线上/线下）、日期、时间、名称</td></tr>
+      <tr><td>5</td><td>选择参会人员</td><td>通过「姓名→GUID」映射或人员弹窗解析，写入两个人员字段</td></tr>
+      <tr><td>6</td><td>新增议题</td><td>点击「新增议题」，填写名称/标签/内容，保存议题</td></tr>
+      <tr><td>7</td><td>保存草稿</td><td>点击「保存草稿」完成创建</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 前置条件 -->
+<section class="card" id="prerequisites">
+  <h2>二、前置条件</h2>
+
+  <h3>1. 支持的浏览器</h3>
+  <ul>
+    <li><strong>Google Chrome</strong>（推荐）</li>
+    <li><strong>Microsoft Edge</strong>（Chromium 内核）</li>
+    <li><strong>Mozilla Firefox</strong></li>
+    <li><strong>Brave</strong>、<strong>Opera</strong>、<strong>Vivaldi</strong> 等 Chromium 内核浏览器</li>
+  </ul>
+
+  <h3>2. 必须安装的扩展</h3>
+  <p>需要先安装 <strong>Tampermonkey（篡改猴）</strong> 浏览器扩展：</p>
+  <ul>
+    <li>Chrome / Edge：<a href="https://chromewebstore.google.com/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo" target="_blank" rel="noopener">Chrome Web Store 安装</a></li>
+    <li>Firefox：<a href="https://addons.mozilla.org/firefox/addon/tampermonkey/" target="_blank" rel="noopener">Firefox Add-ons 安装</a></li>
+  </ul>
+  <div class="alert alert-warning">
+    ⚠️ 注意：请使用 <strong>Tampermonkey（篡改猴）</strong>，不推荐使用 GreasypFork 等替代品，部分 GM API 可能存在兼容性问题。
+  </div>
+
+  <h3>3. 网络与环境</h3>
+  <ul>
+    <li>能够访问公司内网 <code>oa.epoint.com.cn</code></li>
+    <li>拥有 OA 账号并已开通「统一会议」模块权限</li>
+    <li>脚本仅匹配 <code>https://oa.epoint.com.cn/epointoa9/frame/fui/pages/themes/aide/aide*</code> 页面</li>
+  </ul>
+</section>
+
+<!-- 安装步骤 -->
+<section class="card" id="install">
+  <h2>三、安装步骤</h2>
+
+  <h3>方式一：直接安装（推荐）</h3>
+  <ol class="step-list">
+    <li>确保已安装 Tampermonkey 扩展</li>
+    <li>获取脚本文件 <code>oa-weekly-meeting.user.js</code></li>
+    <li>点击浏览器工具栏上的 <strong>Tampermonkey 图标</strong> → 选择 <strong>「添加新脚本」</strong></li>
+    <li>删除编辑器中的默认模板内容</li>
+    <li>将 <code>oa-weekly-meeting.user.js</code> 的完整内容复制粘贴到编辑器中</li>
+    <li>按 <code>Ctrl + S</code>（Mac: <code>Cmd + S</code>）保存脚本</li>
+    <li>关闭脚本编辑器，刷新 OA 页面</li>
+    <li>看到 Tampermonkey 图标上显示数字角标，表示脚本已启用</li>
+  </ol>
+
+  <h3>方式二：拖放安装</h3>
+  <ol class="step-list">
+    <li>将 <code>oa-weekly-meeting.user.js</code> 文件保存到本地</li>
+    <li>打开 Tampermonkey 管理面板 → 「工具」标签页</li>
+    <li>将脚本文件拖入浏览器窗口，Tampermonkey 会弹出安装确认</li>
+    <li>点击「安装」完成</li>
+  </ol>
+
+  <h3>验证安装成功</h3>
+  <div class="alert alert-success">
+    ✅ 安装成功后，访问 OA 首页，点击 Tampermonkey 图标，能看到「新点OA周例会自动化」脚本处于启用状态。
+  </div>
+
+  <h3>更新脚本</h3>
+  <ol class="step-list">
+    <li>打开 Tampermonkey 管理面板 → 「已安装脚本」</li>
+    <li>找到「新点OA周例会自动化」，点击编辑图标</li>
+    <li>全选并删除旧内容，粘贴新版本的完整代码</li>
+    <li>保存（<code>Ctrl/Cmd + S</code>）即完成更新</li>
+  </ol>
+</section>
+
+<!-- 配置说明 -->
+<section class="card" id="config">
+  <h2>四、配置说明</h2>
+  <p>脚本的核心配置集中在代码开头的 <code>CONFIG</code> 对象中。<strong>换团队/换环境时只需修改这些配置</strong>，无需改动流程逻辑。</p>
+
+  <h3>4.1 会议基本配置</h3>
+  <div class="config-section">
+<h4>会议名称模板</h4>
+<pre><code>nameTemplate: "研发4部-1组周例会-{year}年第{period}期-{mmdd}"
+// 可用占位符：
+//   {year}   → 会议日期的年份，如 2026
+//   {period} → 会议期次，如 29
+//   {mmdd}   → 会议日期的月日，如 0917
+// 示例输出：研发4部-1组周例会-2026年第29期-0924</code></pre>
+  </div>
+
+  <div class="config-section">
+<h4>会议类型与模板</h4>
+<pre><code>type: "0203",              // 会议类型编码（OA 后台配置）
+modelGuid: "5fa25cb0-71a8-4086-b223-edd7e7e0cded",  // 会议模板 GUID
+roomType: "online",        // 默认会议室类型：online / offline</code></pre>
+  </div>
+
+  <h3>4.2 会议期次推算</h3>
+  <div class="config-section">
+<pre><code>period: {
+  base: 28,                        // 基准期次
+  baseDate: "2026-09-17",          // 基准日期（该日期对应第 28 期）
+}
+// 推算公式：期次 = base + round((目标日期 - baseDate) / 7)
+// 即基准日期之后每过一周，期次自动 +1</code></pre>
+  </div>
+
+  <h3>4.3 会议时间与腾讯会议</h3>
+  <div class="config-section">
+<pre><code>time: "16:00-16:30",   // 默认会议时间（HH:mm-HH:mm）
+
+tencentMeeting: {
+  topic: "周例会-研发1组",                                   // 会议主题
+  time: "16:00-17:00 (GMT+08:00) 中国标准时间 - 北京",        // 时间描述
+  url: "https://meeting.tencent.com/dm/RBOwS36hEUIX",       // 会议链接
+  id: "969-3173-9175",                                      // 会议号
+  inviter: "李林-前端",                                      // 邀请人
+}</code></pre>
+  </div>
+
+  <h3>4.4 参会人员配置</h3>
+  <div class="config-section">
+<pre><code>// 参会人员姓名列表（配置对话框中可修改）
+participants: [
+  "戴科", "黄赟博", "徐灵杰",
+  "曹渝澄", "周胜宇", "杨世杰", "周志银", "杨赛",
+],
+
+// 姓名 → 人员 GUID 映射（OA 隐藏域需要 GUID）
+// 缺哪个人就补哪一行；缺的姓名会退化为"打开人员选择弹窗解析"
+participantGuids: {
+  戴科: "e92eb9b1-975a-447a-b3c4-2e61b67d443d",
+  黄赟博: "2894e5ad-241b-49de-bc2e-cd106f94675d",
+  徐灵杰: "8dcd74d1-3609-4396-8c03-3a0513a64b5e",
+  // ... 更多人员
+},
+
+// 已离职人员（人员离职时登记到这里，会自动从名单中剔除）
+departedParticipants: ["左惠"],</code></pre>
+  </div>
+  <div class="alert alert-warning">
+    ⚠️ <strong>人员离职怎么办</strong>：光从 <code>participants</code> 里删名字可能不生效——配置对话框会把上次填的人员记在本地（GM 存储）里，下次打开对话框带出的是那份旧名单。v1.6.1 起，把离职人员写进 <code>departedParticipants</code>，代码名单和记住的旧名单都会自动剔除，日志会打印「已剔除离职人员: XXX」。
+  </div>
+  <div class="alert alert-info">
+    💡 <strong>如何获取人员 GUID</strong>：在 OA 中手动打开一次人员选择弹窗，脚本会自动从数据模型中解析出「姓名→GUID」映射（需配置对应姓名）。或者咨询 OA 管理员从后台获取。
+  </div>
+
+  <h3>4.5 议题配置</h3>
+  <div class="config-section">
+<pre><code>agenda: {
+  name: "本周工作情况同步",    // 议题名称（默认值）
+  label: 1,                    // 议题标签：1=ST议题, 2=AT议题, 0=其他议题
+  content: "本周工作情况同步",  // 议题内容（默认与名称相同）
+}</code></pre>
+  </div>
+
+  <h3>4.6 高级配置</h3>
+  <div class="config-section">
+<pre><code>// 是否自动执行（页面加载后自动运行）
+// 建议保持 false，通过菜单手动触发，避免误操作
+autoRun: false,
+
+// 超时与重试配置
+timing: {
+  stepTimeout: 15000,    // 单步骤超时（毫秒）
+  pollInterval: 300,     // 轮询间隔（毫秒）
+  maxRetries: 3,         // 单步骤最大重试次数
+  retryDelay: 2000,      // 重试间隔（毫秒）
+  navigationTimeout: 30000,  // 页面导航超时（毫秒）
+  lockTimeout: 120000,   // 运行锁超时（防止刷新后永久锁死）
+}</code></pre>
+  </div>
+</section>
+
+<!-- 使用指南 -->
+<section class="card" id="usage">
+  <h2>五、使用指南</h2>
+
+  <h3>5.1 首次使用</h3>
+  <ol class="step-list">
+    <li>登录新点 OA 平台，进入 OA 首页</li>
+    <li>点击浏览器工具栏上的 <strong>Tampermonkey 图标</strong></li>
+    <li>在菜单中选择 <strong>「立即执行创建周例会」</strong></li>
+    <li>弹出配置对话框，核对以下信息：
+      <ul>
+        <li><strong>会议日期</strong>：默认为下一个周四</li>
+        <li><strong>会议期次</strong>：根据基准日期自动推算</li>
+        <li><strong>会议名称</strong>：按模板自动生成</li>
+        <li><strong>会议形式</strong>：线上/线下</li>
+        <li><strong>腾讯会议信息</strong>：线上会议时显示</li>
+        <li><strong>议题名称</strong>：默认「本周工作情况同步」</li>
+        <li><strong>参会人员</strong>：多人用顿号（、）或逗号分隔</li>
+      </ul>
+    </li>
+    <li>确认无误后点击 <strong>「确认执行」</strong></li>
+    <li>脚本自动执行全部步骤，右下角显示执行进度与结果面板</li>
+    <li>执行成功后，到「我的会议 → 会议列表（草稿）」核对并提交</li>
+  </ol>
+
+  <div class="alert alert-info">
+    💡 <strong>配置记忆</strong>：首次执行后，脚本会自动保存你的配置（议题名称、参会人员、会议形式、腾讯会议信息、会议时间），下次打开配置对话框会自动带出。
+  </div>
+
+  <h3>5.2 日常使用</h3>
+  <ol class="step-list">
+    <li>打开 OA 首页</li>
+    <li>Tampermonkey 菜单 → 「立即执行创建周例会」</li>
+    <li>配置对话框中通常只需确认/微调日期、议题名称</li>
+    <li>点击「确认执行」，等待完成</li>
+  </ol>
+
+  <h3>5.3 配置对话框说明</h3>
+  <table>
+    <thead>
+      <tr><th>字段</th><th>说明</th><th>是否必填</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>会议日期</td><td>选择会议日期，默认下一个周四</td><td>是</td></tr>
+      <tr><td>会议期次</td><td>自动推算，可手动调整</td><td>是</td></tr>
+      <tr><td>开始/结束时间</td><td>格式 HH:mm，如 16:00</td><td>是</td></tr>
+      <tr><td>会议名称</td><td>按模板自动生成，可手动修改</td><td>是</td></tr>
+      <tr><td>会议形式</td><td>线上会议 / 线下会议</td><td>是</td></tr>
+      <tr><td>腾讯会议信息</td><td>仅线上会议时显示</td><td>线上时建议填写</td></tr>
+      <tr><td>议题名称</td><td>如「本周工作情况同步」</td><td>是</td></tr>
+      <tr><td>参会人员</td><td>多人用、或逗号分隔</td><td>是</td></tr>
+    </tbody>
+  </table>
+
+  <h3>5.4 中断与取消</h3>
+  <ul>
+    <li>配置对话框打开时，点击 <strong>「取消」</strong> 或按 <strong>ESC</strong> 键可取消执行</li>
+    <li>脚本执行过程中如需中断，可刷新页面，运行锁会在 2 分钟后自动释放</li>
+    <li>如果脚本异常中断导致一直提示「执行中」，使用菜单「清除运行锁」重置</li>
+  </ul>
+</section>
+
+<!-- 菜单命令 -->
+<section class="card" id="menu">
+  <h2>六、Tampermonkey 菜单命令</h2>
+  <p>点击 Tampermonkey 图标，可以看到以下命令：</p>
+
+  <ul class="menu-list">
+    <li><span class="cmd">立即执行</span><div><strong>立即执行创建周例会</strong><br><small>弹出配置对话框并执行完整流程</small></div></li>
+    <li><span class="cmd">诊断</span><div><strong>诊断会议表单</strong><br><small>打开「新增会议」对话框，转储全部字段与表单标签后关闭，不产生草稿。用于排查字段名、定位写入失败原因。</small></div></li>
+    <li><span class="cmd">状态</span><div><strong>查看执行状态</strong><br><small>显示当前脚本是否正在执行、执行到第几步</small></div></li>
+    <li><span class="cmd">日志</span><div><strong>查看执行日志</strong><br><small>显示最近 80 条执行日志，便于排查问题</small></div></li>
+    <li><span class="cmd">修复</span><div><strong>清除运行锁</strong><br><small>脚本异常中断后一直提示「执行中」时使用，重置运行状态</small></div></li>
+    <li><span class="cmd">重置</span><div><strong>重置本地配置</strong><br><small>清除已保存的配置（议题、人员、会议形式等），恢复脚本内置默认值</small></div></li>
+  </ul>
+</section>
+
+<!-- 常见问题 -->
+<section class="card" id="troubleshooting">
+  <h2>七、常见问题</h2>
+
+  <details>
+    <summary>Q1：脚本没有生效 / 菜单看不到？</summary>
+    <div class="detail-content">
+      <ol>
+        <li>确认 Tampermonkey 扩展已安装并启用</li>
+        <li>确认脚本已启用（Tampermonkey 面板中开关为蓝色）</li>
+        <li>确认当前页面 URL 为 OA 首页（匹配 <code>oa.epoint.com.cn/epointoa9/frame/fui/pages/themes/aide/aide*</code>）</li>
+        <li>刷新页面后再次尝试</li>
+        <li>按 F12 打开开发者工具 → Console，查看是否有脚本报错</li>
+      </ol>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q2：执行失败，提示「会议看板 iframe 加载超时」？</summary>
+    <div class="detail-content">
+      <ul>
+        <li>检查网络连接是否正常，OA 页面是否完全加载</li>
+        <li>确认账号有「统一会议」模块权限</li>
+        <li>手动点击「统一会议」→「我的会议」，确认能正常打开看板</li>
+        <li>尝试增大 <code>timing.stepTimeout</code> 配置值</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q3：人员写入失败或为空？</summary>
+    <div class="detail-content">
+      <ul>
+        <li>确认 <code>participantGuids</code> 配置中补全了所有参会人员的 GUID</li>
+        <li>使用「诊断会议表单」菜单查看实际的人员字段名</li>
+        <li>如果姓名不匹配（如 OA 中是「张三」配置中是「张三丰」），修正配置中的姓名</li>
+        <li>脚本会优先使用配置的 GUID，缺失时才尝试从人员弹窗解析</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q4：议题名称被清空 / 写入失败？</summary>
+    <div class="detail-content">
+      <p>这是已知问题（议题编辑页异步数据回填会覆盖已写入字段）。v1.6.0 已修复：</p>
+      <ul>
+        <li>脚本采用「稳定写入」策略：写入后回读校验，被覆盖时自动重写</li>
+        <li>保存前再次检查所有字段，发现被覆盖则重新写入</li>
+      </ul>
+      <p>如果仍有问题，请查看执行日志并反馈。</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q5：脚本一直提示「脚本正在执行中」？</summary>
+    <div class="detail-content">
+      <p>这通常是因为脚本异常中断（如刷新页面、关闭标签页）导致运行锁未释放。</p>
+      <ul>
+        <li><strong>方法一</strong>：等待 2 分钟，锁会自动超时释放</li>
+        <li><strong>方法二</strong>：Tampermonkey 菜单 → 「清除运行锁（卡在执行中时用）」</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q6：会议日期/时间显示为创建时间？</summary>
+    <div class="detail-content">
+      <p>v1.6.0 已修复此问题。脚本现在会显式写入配置的会议日期与起止时间。</p>
+      <p>如果使用旧版本，请更新脚本。</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q7：如何切换到另一个团队/部门？</summary>
+    <div class="detail-content">
+      <p>修改 <code>CONFIG</code> 中的以下配置：</p>
+      <ul>
+        <li><code>nameTemplate</code>：会议名称中的部门/组名</li>
+        <li><code>participants</code>：参会人员姓名列表</li>
+        <li><code>participantGuids</code>：对应的人员 GUID</li>
+        <li><code>tencentMeeting</code>：腾讯会议信息</li>
+        <li><code>period.base / baseDate</span></code>：期次基准</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q8：线上会议时「新增议题」无反应？</summary>
+    <div class="detail-content">
+      <p>这是因为表单必填项校验未通过。脚本已处理以下情况：</p>
+      <ul>
+        <li>自动将会议形式切换为「线上会议室(01)」</li>
+        <li>自动填写「其他会议室」字段（腾讯会议信息）</li>
+        <li>触发会议形式联动逻辑</li>
+      </ul>
+      <p>如果仍失败，请查看执行日志中「步骤 6」的输出，通常是其他必填项未填写。</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q9：如何查看详细的执行日志？</summary>
+    <div class="detail-content">
+      <ul>
+        <li><strong>页面内面板</strong>：Tampermonkey 菜单 → 「查看执行日志」（可滚动、可复制）</li>
+        <li><strong>浏览器控制台</strong>：F12 → Console，过滤 <code>[OA-Weekly]</code></li>
+        <li>日志前缀：<code>[OA-Weekly]</code>，级别：DEBUG / INFO / WARN / ERROR</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary>Q10：支持线下会议吗？</summary>
+    <div class="detail-content">
+      <p>支持。在配置对话框中选择「线下会议」即可。</p>
+      <div class="alert alert-warning">
+        ⚠️ 注意：线下会议时，「公司会议室」字段需要人工选择，脚本不会自动填写。请在草稿中手动补充会议室信息。
+      </div>
+    </div>
+  </details>
+</section>
+
+<!-- 更新日志 -->
+<section class="card" id="changelog">
+  <h2>八、更新日志</h2>
+
+  <details open>
+    <summary><span class="version-badge">v1.6.1</span> 人员离职处理 - 2026-10-19</summary>
+    <div class="detail-content">
+      <h4>人员变动</h4>
+      <ul>
+        <li>左惠已离职：从 <code>participants</code> 与 <code>participantGuids</code> 中移除</li>
+      </ul>
+      <h4>新功能</h4>
+      <ul>
+        <li>新增 <code>CONFIG.departedParticipants</code>：人员离职时登记在这里，代码名单和配置对话框里记住的历史名单都会自动剔除，日志打印「已剔除离职人员: XXX」</li>
+      </ul>
+      <div class="alert alert-info">
+        💡 背景：配置对话框会把参会人员记在本地 GM 存储里，下次带出的是那份旧名单。v1.6.1 之前只改 <code>participants</code> 会出现「代码里删了人，会议里还照样有」的假象。
+      </div>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="version-badge">v1.6.0</span> 修复关键缺陷 - 2026-09-18</summary>
+    <div class="detail-content">
+      <h4>Bug 修复</h4>
+      <ul>
+        <li><strong>[关键]</strong> 草稿的会议日期/时间一直是「创建时刻」（表单默认值）→ 现在会显式写入配置的会议日期与起止时间</li>
+      </ul>
+      <h4>新功能</h4>
+      <ul>
+        <li>配置对话框新增会议时间输入（开始时间 / 结束时间）</li>
+        <li>新增「诊断会议表单」菜单（打开表单转储字段后关闭，不产生草稿）</li>
+      </ul>
+      <h4>体验优化</h4>
+      <ul>
+        <li>「查看执行日志/状态」改为页面内可滚动面板（alert 会截断长日志）</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="version-badge">v1.5.2</span> 交互完善</summary>
+    <div class="detail-content">
+      <ul>
+        <li>执行成功后结果面板自动关闭（倒计时 10 秒，失败面板保留）</li>
+        <li>配置对话框防重复弹出、支持 ESC 取消</li>
+        <li>修复「注销登录」字样导致登录页误判</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="version-badge">v1.5.1</span> 关闭自动执行</summary>
+    <div class="detail-content">
+      <ul>
+        <li>关闭测试期间临时打开的自动执行（autoRun=false，改为菜单手动触发）</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="version-badge">v1.5.0</span> 人员 GUID 映射</summary>
+    <div class="detail-content">
+      <ul>
+        <li>人员字段写入改为「CONFIG 姓名→GUID 映射」优先（已验证可用）</li>
+        <li>映射里缺的姓名才去尝试打开人员弹窗解析</li>
+        <li>补齐了参会人员 GUID 配置项</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="version-badge">v1.4.3</span> 人员弹窗优化</summary>
+    <div class="detail-content">
+      <ul>
+        <li>人员弹窗改为读取数据模型取 GUID</li>
+        <li>诊断信息瘦身，不再冲掉错误信息</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="version-badge">v1.4.1</span> 多策略打开弹窗</summary>
+    <div class="detail-content">
+      <ul>
+        <li>人员弹窗改多策略打开（点击/鼠标事件/mini 控件事件）</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="version-badge">v1.4.0</span> 重大重构</summary>
+    <div class="detail-content">
+      <ul>
+        <li>人员选择改走 OA 人员弹窗（去掉写死的人员 GUID，换团队只改姓名）</li>
+        <li>配置记住上次填写内容</li>
+        <li>新增「清除运行锁/重置本地配置」菜单</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="version-badge">v1.3.13</span> 列席人员修复</summary>
+    <div class="detail-content">
+      <ul>
+        <li>修复列席人员（无表决权）为空：回读弹窗写入值并同步到两个人员字段</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="version-badge">v1.3.12</span> 议题名称修复</summary>
+    <div class="detail-content">
+      <ul>
+        <li>修复议题名称被议题编辑页异步回填覆盖：写入后回读校验并重写</li>
+      </ul>
+    </div>
+  </details>
+</section>
+
+<!-- 技术细节 -->
+<section class="card" id="tech">
+  <h2>九、技术细节</h2>
+
+  <h3>9.1 技术栈</h3>
+  <ul>
+    <li>原生 JavaScript（ES6+），无需任何外部依赖</li>
+    <li>Tampermonkey GM API：<code>GM_setValue</code> / <code>GM_getValue</code> / <code>GM_info</code> / <code>GM_addStyle</code> / <code>GM_registerMenuCommand</code></li>
+    <li>适配 OA 平台的 mini-ui 控件库</li>
+  </ul>
+
+  <h3>9.2 核心机制</h3>
+  <table>
+    <thead>
+      <tr><th>机制</th><th>说明</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>轮询等待</td><td>所有 iframe/元素等待均采用轮询机制，避免错过异步加载内容</td></tr>
+      <tr><td>重试机制</td><td>每个步骤支持最多 3 次重试，应对网络波动</td></tr>
+      <tr><td>运行锁</td><td>防止重复触发，超时 2 分钟自动释放</td></tr>
+      <tr><td>稳定写入</td><td>写入字段后回读校验，被页面异步回填时自动重写</td></tr>
+      <tr><td>多级 iframe 遍历</td><td>递归收集所有可访问文档，支持跨 iframe 查找元素</td></tr>
+      <tr><td>配置持久化</td><td>使用 GM_setValue 保存用户配置，跨会话记忆</td></tr>
+    </tbody>
+  </table>
+
+  <h3>9.3 安全说明</h3>
+  <ul>
+    <li>脚本仅在匹配的 OA 页面运行，不会访问其他网站</li>
+    <li>所有数据保存在浏览器本地（GM 存储），不上传到任何服务器</li>
+    <li>人员 GUID 由用户自行配置，脚本不主动获取或传输</li>
+    <li>执行结果仅为「草稿」，需人工核对后正式提交</li>
+  </ul>
+
+  <h3>9.4 文件信息</h3>
+  <pre><code>文件名：oa-weekly-meeting.user.js
+类型：Tampermonkey UserScript
+版本：1.6.1
+@match：https://oa.epoint.com.cn/epointoa9/frame/fui/pages/themes/aide/aide*
+@run-at：document-idle
+@grant：GM_setValue, GM_getValue, GM_info, GM_addStyle, GM_registerMenuCommand</code></pre>
+</section>
+
+<footer>
+  <p>📋 新点OA周例会自动化 · Tampermonkey UserScript v1.6.1</p>
+  <p style="margin-top:4px;">本指南由脚本代码自动生成，如有疑问请联系作者 CatPaw</p>
+</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,7 @@
+
+[0:v]trim=0:7.0,setpts=PTS-STARTPTS,scale=1920:1080:flags=bicubic,fps=30,format=yuv420p,settb=AVTB[v0];
+[1:v]zoompan=z='min(zoom+0.00045,1.05)':d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1920x1080:fps=30,format=yuv420p,settb=AVTB[v1];
+[2:v]scale=1920:1080,fps=30,format=yuv420p,settb=AVTB[v2];
+[3:v]trim=4.4:9.6,setpts=PTS-STARTPTS,scale=1920:1080:flags=bicubic,fps=30,format=yuv420p,settb=AVTB[v3];
+[4:v]zoompan=z='min(zoom+0.00045,1.05)':d=1:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1920x1080:fps=30,format=yuv420p,settb=AVTB[v4];
+[v0][v1][v2][v3][v4]concat=n=5:v=1:a=0[vout]
