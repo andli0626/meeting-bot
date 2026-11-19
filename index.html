@@ -1,0 +1,1697 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>新点 OA 周例会自动化 V1.6.1 | 七个步骤，压成一次点击</title>
+<meta name="description" content="一个油猴脚本，把新点 OA 里创建部门周例会的七步操作压成一次点击：自动填会议信息、按姓名选参会与列席人员、加议题，最后保存为草稿。">
+<meta name="theme-color" content="#2563eb">
+<meta name="robots" content="noindex">
+<meta property="og:title" content="新点 OA 周例会自动化 V1.6.1">
+<meta property="og:description" content="单文件油猴脚本，免部署、免账号、免授权，把周例会草稿的七个步骤压成一次点击。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%232563eb'/%3E%3Cpath d='M18 22h28M18 32h28M18 42h18' stroke='%23fff' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --band: #f6f8fb;
+  --band-strong: #eef3f9;
+  --surface: #ffffff;
+  --text: #111827;
+  --muted: #5f6b7a;
+  --subtle: #8491a3;
+  --border: #d9e1ec;
+  --border-soft: #e7edf5;
+  --blue: #2563eb;
+  --blue-dark: #1d4ed8;
+  --blue-soft: #eaf2ff;
+  --green: #0f8f55;
+  --green-soft: #e8f6ee;
+  --orange: #e87722;
+  --shadow-sm: 0 6px 18px rgba(24, 39, 75, 0.08);
+  --shadow-lg: 0 24px 60px rgba(24, 39, 75, 0.16);
+  --radius: 8px;
+  --content: 1320px;
+  --header-h: 74px;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", "PingFang SC", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--header-h);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.6;
+  margin: 0;
+  min-width: 320px;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.nav-open { overflow: hidden; }
+
+a { color: inherit; text-decoration: none; }
+
+button, input, select, textarea { font: inherit; }
+
+button { border: 0; }
+
+svg {
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.icon-sprite { display: none; }
+
+/* ===== 吸顶导航 ===== */
+.site-header {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: saturate(180%) blur(10px);
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  gap: 26px;
+  height: var(--header-h);
+  justify-content: space-between;
+  left: 0;
+  padding: 0 max(24px, calc((100% - var(--content)) / 2));
+  position: sticky;
+  right: 0;
+  top: 0;
+  transition: box-shadow .18s ease, border-color .18s ease;
+  z-index: 20;
+}
+
+.site-header.is-scrolled {
+  border-color: var(--border);
+  box-shadow: 0 8px 24px rgba(24, 39, 75, 0.08);
+}
+
+.brand {
+  align-items: center;
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 10px;
+  min-width: 0;
+}
+
+.brand-mark {
+  align-items: center;
+  background: var(--blue);
+  border-radius: 7px;
+  color: #fff;
+  display: inline-flex;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+
+.brand-mark svg { height: 18px; width: 18px; }
+
+.brand span {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.brand small {
+  color: var(--subtle);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  margin-left: 2px;
+}
+
+.site-nav {
+  align-items: center;
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.site-nav a {
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 12px;
+  transition: background .15s ease, color .15s ease;
+  white-space: nowrap;
+}
+
+.site-nav a:hover { background: var(--band); color: var(--text); }
+
+.header-actions { align-items: center; display: flex; gap: 10px; }
+
+.primary-link {
+  align-items: center;
+  background: var(--blue);
+  border-radius: 6px;
+  color: #fff;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 700;
+  gap: 7px;
+  padding: 9px 16px;
+  transition: background .15s ease, transform .15s ease;
+  white-space: nowrap;
+}
+
+.primary-link:hover { background: var(--blue-dark); transform: translateY(-1px); }
+.primary-link svg { height: 16px; width: 16px; }
+
+.menu-button {
+  align-items: center;
+  background: var(--band);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  cursor: pointer;
+  display: none;
+  height: 38px;
+  justify-content: center;
+  width: 38px;
+}
+
+.menu-button svg { height: 20px; width: 20px; }
+
+/* ===== 通用按钮 ===== */
+.button {
+  align-items: center;
+  border-radius: 6px;
+  display: inline-flex;
+  font-size: 15px;
+  font-weight: 700;
+  gap: 8px;
+  justify-content: center;
+  padding: 13px 22px;
+  transition: background .15s ease, border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+}
+
+.button svg { height: 17px; width: 17px; }
+
+.button-primary {
+  background: var(--blue);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.24);
+  color: #fff;
+}
+
+.button-primary:hover { background: var(--blue-dark); transform: translateY(-1px); }
+
+.button-secondary {
+  background: #fff;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.button-secondary:hover { border-color: var(--blue); color: var(--blue); }
+
+.button-ghost {
+  background: var(--blue-soft);
+  color: var(--blue-dark);
+}
+
+.button-ghost:hover { background: #dfeaff; }
+
+/* ===== Hero ===== */
+.hero {
+  display: grid;
+  gap: 40px;
+  grid-template-columns: minmax(320px, 0.86fr) minmax(500px, 1fr);
+  margin: 0 auto;
+  max-width: 1440px;
+  padding: 66px 24px 30px;
+}
+
+.hero-copy { align-self: center; }
+
+.eyebrow {
+  align-items: center;
+  color: var(--blue);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 8px;
+  letter-spacing: .04em;
+  margin-bottom: 18px;
+  text-transform: uppercase;
+}
+
+.eyebrow::before {
+  background: var(--blue);
+  border-radius: 999px;
+  content: "";
+  height: 7px;
+  width: 7px;
+}
+
+.hero h1 {
+  font-size: 60px;
+  font-weight: 900;
+  line-height: 1.06;
+  margin: 0 0 18px;
+  letter-spacing: -0.01em;
+}
+
+.hero h1 em {
+  color: var(--blue);
+  font-style: normal;
+  white-space: nowrap;
+}
+
+.hero-subtitle {
+  color: #334155;
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1.36;
+  margin: 0 0 16px;
+}
+
+.hero-text {
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.9;
+  margin: 0;
+  max-width: 560px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.trust-row {
+  align-items: center;
+  color: var(--muted);
+  display: grid;
+  font-size: 14px;
+  gap: 9px 18px;
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  margin-top: 26px;
+}
+
+.trust-row span { align-items: center; display: inline-flex; gap: 8px; white-space: nowrap; }
+.trust-row svg { color: #64748b; height: 16px; width: 16px; }
+
+/* ===== Hero 视觉：对话框示意 ===== */
+.hero-visual {
+  align-self: center;
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  position: relative;
+}
+
+.hero-visual::before {
+  background: radial-gradient(circle at 70% 20%, rgba(37, 99, 235, 0.10), transparent 62%);
+  content: "";
+  inset: -40px;
+  position: absolute;
+}
+
+.browser-shell {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+  max-width: 620px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  z-index: 2;
+}
+
+.browser-bar {
+  align-items: center;
+  background: #f8fafd;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  gap: 10px;
+  padding: 9px 14px;
+}
+
+.dots { display: flex; gap: 6px; }
+.dots i { border-radius: 999px; display: block; height: 9px; width: 9px; }
+.dots i:nth-child(1) { background: #ff5f57; }
+.dots i:nth-child(2) { background: #febc2e; }
+.dots i:nth-child(3) { background: #28c840; }
+
+.browser-url {
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  color: var(--subtle);
+  flex: 1;
+  font-family: var(--mono);
+  font-size: 11px;
+  overflow: hidden;
+  padding: 3px 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mock-panel {
+  background: linear-gradient(180deg, #ffffff, #fbfdff);
+  padding: 22px 24px 24px;
+}
+
+.mock-head {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.mock-head h2 {
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.3;
+  margin: 0 0 4px;
+}
+
+.mock-head p { color: var(--subtle); font-size: 12px; margin: 0; }
+
+.pill {
+  align-items: center;
+  background: var(--blue-soft);
+  border-radius: 999px;
+  color: var(--blue-dark);
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 700;
+  gap: 5px;
+  padding: 5px 10px;
+  white-space: nowrap;
+}
+
+.pill svg { height: 12px; width: 12px; }
+
+.mock-form {
+  background: #fff;
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  display: grid;
+  gap: 0;
+  overflow: hidden;
+}
+
+.mock-row {
+  align-items: center;
+  border-bottom: 1px solid var(--border-soft);
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 86px minmax(0, 1fr);
+  padding: 9px 14px;
+}
+
+.mock-row:last-child { border-bottom: 0; }
+
+.mock-row dt {
+  color: var(--subtle);
+  font-size: 12px;
+  margin: 0;
+}
+
+.mock-row dd {
+  color: #1f2937;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mock-row dd.mono { font-family: var(--mono); font-size: 11.5px; font-weight: 600; }
+.mock-row dd .tag {
+  background: var(--band);
+  border-radius: 4px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+}
+
+.mock-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.mock-btn {
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 20px;
+}
+
+.mock-btn.cancel { background: #fff; border: 1px solid var(--border); color: var(--muted); }
+.mock-btn.ok { background: var(--blue); color: #fff; box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22); }
+
+.toast {
+  align-items: flex-start;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow-sm);
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px 14px;
+}
+
+.toast-line {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font-size: 12px;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.toast-line b { color: var(--text); font-size: 12.5px; }
+
+.bar {
+  background: var(--border-soft);
+  border-radius: 999px;
+  height: 6px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.bar i {
+  background: linear-gradient(90deg, var(--blue), #60a5fa);
+  border-radius: 999px;
+  display: block;
+  height: 100%;
+  width: 43%;
+}
+
+.mock-note {
+  color: var(--subtle);
+  font-size: 11px;
+  margin: 12px 0 0;
+  text-align: right;
+}
+
+/* ===== 数据条 ===== */
+.stats {
+  border-top: 1px solid var(--border-soft);
+  display: grid;
+  gap: 0;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 34px auto 0;
+  max-width: var(--content);
+  padding: 0 24px;
+}
+
+.stats > div {
+  border-left: 1px solid var(--border-soft);
+  padding: 22px 6px 22px 26px;
+}
+
+.stats > div:first-child { border-left: 0; padding-left: 0; }
+
+.stats b {
+  color: var(--text);
+  display: block;
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.stats b span { color: var(--subtle); font-size: 14px; font-weight: 700; margin-left: 4px; }
+.stats p { color: var(--muted); font-size: 13.5px; margin: 0; }
+
+/* ===== 板块通用 ===== */
+.features, .changelog {
+  margin: 0 auto;
+  max-width: var(--content);
+  padding: 76px 24px;
+  position: relative;
+}
+
+.flow, .manual, .download, .about {
+  margin: 0;
+  max-width: none;
+  padding: 76px max(24px, calc((100% - var(--content)) / 2));
+  position: relative;
+}
+
+.section-heading {
+  margin: 0 auto 36px;
+  max-width: 760px;
+  text-align: center;
+}
+
+.section-heading .kicker {
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.section-heading h2 {
+  color: var(--text);
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 1.26;
+  margin: 10px 0 12px;
+}
+
+.section-heading p {
+  color: var(--muted);
+  font-size: 16.5px;
+  line-height: 1.85;
+  margin: 0;
+}
+
+.section-band { background: var(--band); }
+
+/* ===== 功能卡 ===== */
+.feature-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 1px 0 rgba(24, 39, 75, 0.02);
+  display: flex;
+  flex-direction: column;
+  padding: 28px 24px 24px;
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+
+.feature-card:hover {
+  border-color: #c8d6ea;
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
+}
+
+.feature-icon {
+  align-items: center;
+  background: var(--blue-soft);
+  border-radius: 8px;
+  color: var(--blue);
+  display: inline-flex;
+  height: 40px;
+  justify-content: center;
+  margin-bottom: 16px;
+  width: 40px;
+}
+
+.feature-icon svg { height: 20px; width: 20px; }
+
+.feature-card h3 {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.32;
+  margin: 0 0 10px;
+}
+
+.feature-card p {
+  color: var(--muted);
+  font-size: 14.5px;
+  line-height: 1.78;
+  margin: 0 0 18px;
+}
+
+.feature-card ul {
+  color: #334155;
+  display: grid;
+  font-size: 13.5px;
+  gap: 9px;
+  line-height: 1.58;
+  list-style: none;
+  margin: auto 0 0;
+  padding: 0;
+}
+
+.feature-card li { padding-left: 17px; position: relative; }
+
+.feature-card li::before {
+  background: var(--blue);
+  border-radius: 999px;
+  content: "";
+  height: 5px;
+  left: 0;
+  position: absolute;
+  top: 8px;
+  width: 5px;
+}
+
+/* ===== 流程 ===== */
+.flow-track {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  margin: 0 auto;
+  max-width: var(--content);
+  position: relative;
+}
+
+.flow-track::before {
+  background: var(--border);
+  content: "";
+  height: 1px;
+  left: 6%;
+  position: absolute;
+  right: 6%;
+  top: 40px;
+}
+
+.flow-step {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 1px 0 rgba(24, 39, 75, 0.02);
+  min-height: 196px;
+  padding: 34px 15px 20px;
+  position: relative;
+  text-align: center;
+}
+
+.flow-step span {
+  align-items: center;
+  background: var(--blue);
+  border: 3px solid #fff;
+  border-radius: 999px;
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
+  color: #fff;
+  display: inline-flex;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 800;
+  height: 34px;
+  justify-content: center;
+  left: 50%;
+  position: absolute;
+  top: -17px;
+  transform: translateX(-50%);
+  width: 34px;
+}
+
+.flow-step svg { color: #64748b; height: 34px; margin: 4px auto 14px; width: 34px; }
+
+.flow-step h3 {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.4;
+  margin: 0 0 8px;
+}
+
+.flow-step p {
+  color: var(--muted);
+  font-size: 12.5px;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.flow-note {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.8;
+  margin: 26px auto 0;
+  max-width: 820px;
+  text-align: center;
+}
+
+.flow-note b { color: var(--text); }
+
+/* ===== 手册 ===== */
+.manual-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.manual-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.manual-card header { align-items: center; display: flex; gap: 10px; margin-bottom: 18px; }
+
+.manual-icon {
+  align-items: center;
+  background: var(--blue-soft);
+  border-radius: 7px;
+  color: var(--blue);
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+
+.manual-icon svg { height: 17px; width: 17px; }
+
+.manual-card h3 { font-size: 18px; font-weight: 800; margin: 0; }
+
+.steps { display: grid; gap: 14px; list-style: none; margin: 0; padding: 0; }
+
+.steps li { display: grid; gap: 10px; grid-template-columns: 22px minmax(0, 1fr); }
+
+.steps li > span {
+  align-items: center;
+  background: var(--blue);
+  border-radius: 999px;
+  color: #fff;
+  display: inline-flex;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  height: 22px;
+  justify-content: center;
+  width: 22px;
+}
+
+.steps li p { color: #334155; font-size: 13.5px; line-height: 1.68; margin: 0; }
+.steps li p b { color: var(--text); }
+
+.table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 18px;
+  overflow-x: auto;
+}
+
+table { border-collapse: collapse; font-size: 13.5px; width: 100%; }
+
+thead th {
+  background: #fbfcfe;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  padding: 12px 16px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+tbody td {
+  border-bottom: 1px solid var(--border-soft);
+  color: #334155;
+  line-height: 1.65;
+  padding: 11px 16px;
+  vertical-align: top;
+}
+
+tbody tr:last-child td { border-bottom: 0; }
+tbody td.mono { color: var(--muted); font-family: var(--mono); font-size: 12px; white-space: nowrap; }
+tbody td b { color: var(--text); }
+
+.faq {
+  margin-top: 26px;
+  display: grid;
+  gap: 10px;
+}
+
+.faq details {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 20px;
+}
+
+.faq details[open] { border-color: #c8d6ea; box-shadow: var(--shadow-sm); }
+
+.faq summary {
+  align-items: center;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  font-size: 14.5px;
+  font-weight: 700;
+  gap: 10px;
+  justify-content: space-between;
+  list-style: none;
+  padding: 15px 0;
+}
+
+.faq summary::-webkit-details-marker { display: none; }
+
+.faq summary svg { color: var(--subtle); flex: 0 0 auto; height: 16px; width: 16px; transition: transform .18s ease; }
+.faq details[open] summary svg { transform: rotate(45deg); color: var(--blue); }
+
+.faq .faq-body {
+  border-top: 1px dashed var(--border-soft);
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.85;
+  padding: 14px 0 18px;
+}
+
+.faq .faq-body b { color: var(--text); }
+.faq .faq-body code {
+  background: var(--band);
+  border-radius: 4px;
+  color: #1e40af;
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 2px 6px;
+}
+
+/* ===== 下载 ===== */
+.download-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.download-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  padding: 26px;
+}
+
+.download-card.primary { border-color: #bfd5f7; box-shadow: 0 16px 40px rgba(37, 99, 235, 0.10); }
+
+.download-top { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
+
+.download-card h3 { font-size: 19px; font-weight: 800; line-height: 1.35; margin: 0 0 6px; }
+.download-card .ver { color: var(--subtle); font-family: var(--mono); font-size: 11.5px; font-weight: 700; letter-spacing: .04em; }
+
+.download-card .meta {
+  color: var(--muted);
+  font-size: 13px;
+  margin: 14px 0 16px;
+}
+
+.download-card .meta strong { color: var(--text); font-weight: 700; }
+
+.download-card ul {
+  color: #334155;
+  display: grid;
+  font-size: 13px;
+  gap: 8px;
+  line-height: 1.55;
+  list-style: none;
+  margin: 0 0 22px;
+  padding: 0;
+}
+
+.download-card li { padding-left: 17px; position: relative; }
+
+.download-card li::before {
+  background: var(--blue);
+  border-radius: 999px;
+  content: "";
+  height: 5px;
+  left: 0;
+  position: absolute;
+  top: 8px;
+  width: 5px;
+}
+
+.download-card .button { margin-top: auto; width: 100%; }
+
+.videos {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 20px;
+}
+
+.video-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.video-card video {
+  background: #0b1220;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+}
+
+.video-card figcaption { padding: 14px 18px 16px; }
+
+.video-card figcaption b { display: block; font-size: 14.5px; margin-bottom: 4px; }
+.video-card figcaption span { color: var(--subtle); font-size: 12px; }
+
+.dl-note {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 20px 0 0;
+}
+
+.dl-note b { color: var(--text); }
+
+/* ===== 版本 ===== */
+.timeline {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.ver-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  padding: 22px;
+}
+
+.ver-card .ver-tag {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.ver-card .ver-tag b { font-family: var(--mono); font-size: 15px; font-weight: 800; }
+.ver-card .ver-tag time { color: var(--subtle); font-size: 11.5px; }
+
+.ver-card .pill { align-self: flex-start; font-size: 10.5px; padding: 3px 8px; margin-bottom: 10px; }
+
+.ver-card h3 { font-size: 15px; font-weight: 800; line-height: 1.4; margin: 0 0 10px; }
+.ver-card p { color: var(--muted); font-size: 13px; line-height: 1.7; margin: 0; }
+
+/* ===== 关于 ===== */
+.about-layout {
+  display: grid;
+  gap: 40px;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.9fr);
+  align-items: start;
+}
+
+.about h2 {
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1.3;
+  margin: 0 0 16px;
+}
+
+.about-layout p {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.95;
+  margin: 0 0 14px;
+}
+
+.about-layout p b { color: var(--text); }
+
+.about-facts {
+  display: grid;
+  gap: 12px;
+}
+
+.fact {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  padding: 16px 18px;
+}
+
+.fact b { font-size: 14.5px; font-weight: 800; }
+.fact span { color: var(--muted); font-size: 13px; line-height: 1.7; }
+
+/* ===== 页脚 ===== */
+.site-footer {
+  background: #0f172a;
+  color: #cbd5e1;
+  padding: 44px max(24px, calc((100% - var(--content)) / 2)) 52px;
+}
+
+.footer-top {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: space-between;
+}
+
+.footer-brand { align-items: center; display: flex; gap: 10px; }
+.footer-brand .brand-mark { background: #1e293b; color: #93c5fd; }
+.footer-brand b { color: #fff; font-size: 16px; }
+.footer-brand span { color: #94a3b8; font-family: var(--mono); font-size: 11.5px; }
+
+.footer-nav { display: flex; flex-wrap: wrap; gap: 20px; }
+.footer-nav a { color: #cbd5e1; font-size: 13.5px; }
+.footer-nav a:hover { color: #fff; }
+
+.footer-bottom {
+  border-top: 1px solid #1e293b;
+  color: #7c8ba1;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  gap: 12px 24px;
+  justify-content: space-between;
+  margin-top: 30px;
+  padding-top: 22px;
+}
+
+.selfcheck { align-items: center; color: #86efac; display: inline-flex; gap: 7px; }
+.selfcheck svg { height: 14px; width: 14px; }
+
+/* ===== 响应式 ===== */
+@media (max-width: 1180px) {
+  .hero { grid-template-columns: minmax(0, 1fr); padding-top: 48px; }
+  .hero h1 { font-size: 50px; }
+  .hero-visual { margin-top: 10px; }
+  .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .flow-track { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .flow-track::before { display: none; }
+  .timeline { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.mobile-nav { display: none; }
+
+@media (max-width: 980px) {
+  .site-nav, .header-actions { display: none; }
+  .menu-button { display: inline-flex; }
+  .mobile-nav {
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.10);
+    left: 0;
+    padding: 10px 20px 18px;
+    position: fixed;
+    right: 0;
+    top: var(--header-h);
+    z-index: 19;
+  }
+  body.nav-open .mobile-nav { display: grid; gap: 2px; }
+  .mobile-nav a { border-radius: 6px; color: var(--text); font-size: 15px; font-weight: 600; padding: 11px 12px; }
+  .mobile-nav a:hover { background: var(--band); }
+  .manual-grid, .download-grid, .videos, .about-layout { grid-template-columns: minmax(0, 1fr); }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stats > div:nth-child(3) { border-left: 0; padding-left: 0; }
+  .stats > div { padding-left: 18px; }
+  .flow-track { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 640px) {
+  .hero h1 { font-size: 38px; }
+  .hero-subtitle { font-size: 19px; }
+  .hero-text { font-size: 15.5px; }
+  .trust-row { grid-template-columns: minmax(0, 1fr); }
+  .section-heading h2 { font-size: 27px; }
+  .feature-grid { grid-template-columns: minmax(0, 1fr); }
+  .stats b { font-size: 24px; }
+  .mock-row { grid-template-columns: 74px minmax(0, 1fr); }
+  .mock-row dd { font-size: 11.5px; }
+  .timeline { grid-template-columns: minmax(0, 1fr); }
+  .about h2 { font-size: 26px; }
+  .feature-card, .manual-card, .download-card { padding: 22px 18px; }
+}
+
+/* ===== 打印 ===== */
+@media print {
+  .site-header, .site-footer, .mobile-nav, .hero-visual { display: none; }
+  body { font-size: 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== 图标 ===== -->
+<svg class="icon-sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v11"/><path d="M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5 11-11"/></symbol>
+  <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-5.5"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8Z"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 19c0-3.2 2.7-5 6-5s6 1.8 6 5"/><path d="M16 5.5a3 3 0 0 1 0 5.6"/><path d="M17.5 14.4c2.4.5 3.5 2.2 3.5 4.6"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5V3Z"/><path d="M8 3v6h7V3"/><path d="M8 14h8v4H8z"/></symbol>
+  <symbol id="i-memo" viewBox="0 0 24 24"><path d="M5 3h14v18H5V3Z"/><path d="M8 7h8M8 11h8M8 15h5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.4-3 7.4-7 9-4-1.6-7-4.6-7-9V6l7-3Z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 1-2.6-5.4"/><path d="M20 4v7h-7"/></symbol>
+  <symbol id="i-terminal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 10l3 2.5-3 2.5M12.5 15h4"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H6v18h12V7l-4-4Z"/><path d="M14 3v4h4"/></symbol>
+  <symbol id="i-video" viewBox="0 0 24 24"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l9 17H3L12 3Z"/><path d="M12 9v5M12 17h.01"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-flow" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="6" rx="1.5"/><rect x="14" y="15" width="7" height="6" rx="1.5"/><path d="M10 6h4v6h3"/><path d="M6.5 9v9h7"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+</svg>
+
+<!-- ===== 导航 ===== -->
+<header class="site-header" data-header>
+  <a class="brand" href="#top" aria-label="周例会自动化首页">
+    <span class="brand-mark" aria-hidden="true"><svg><use href="#i-list"></use></svg></span>
+    <span>周例会自动化</span>
+    <small>V1.6.1</small>
+  </a>
+  <nav class="site-nav" aria-label="页面导航">
+    <a href="#features">核心能力</a>
+    <a href="#flow">执行流程</a>
+    <a href="#manual">使用手册</a>
+    <a href="#download">下载</a>
+    <a href="#about">关于</a>
+  </nav>
+  <div class="header-actions">
+    <a class="primary-link" href="#download">
+      <svg aria-hidden="true"><use href="#i-download"></use></svg>
+      <span>下载脚本</span>
+    </a>
+  </div>
+  <button class="menu-button" type="button" data-menu-button aria-label="打开导航" aria-expanded="false">
+    <svg aria-hidden="true"><use href="#i-menu"></use></svg>
+  </button>
+</header>
+
+<div class="mobile-nav" data-mobile-nav>
+  <a href="#features">核心能力</a>
+  <a href="#flow">执行流程</a>
+  <a href="#manual">使用手册</a>
+  <a href="#download">下载</a>
+  <a href="#about">关于</a>
+</div>
+
+<main id="top">
+
+  <!-- ===== 首屏 ===== -->
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">新点 OA · 周例会自动化</p>
+      <h1>七个步骤，<br>压成<em>一次点击</em>。</h1>
+      <p class="hero-subtitle">会议信息、参会名单、议题与草稿，一次生成。</p>
+      <p class="hero-text">
+        一个油猴脚本，装进浏览器就可用：免部署、免账号、免授权。<br>
+        停留 OA 首页点一下菜单，脚本自己走完新增会议的全流程，<br>
+        最后把结果停在「我的会议 → 草稿」里等你核对。
+      </p>
+      <div class="hero-actions">
+        <a class="button button-primary" href="#download">
+          <svg aria-hidden="true"><use href="#i-download"></use></svg>
+          <span>下载脚本 V1.6.1</span>
+        </a>
+        <a class="button button-secondary" href="#flow">
+          <svg aria-hidden="true"><use href="#i-eye"></use></svg>
+          <span>查看执行流程</span>
+        </a>
+      </div>
+      <div class="trust-row" aria-label="脚本特点">
+        <span><svg aria-hidden="true"><use href="#i-file"></use></svg>单文件脚本，94 KB</span>
+        <span><svg aria-hidden="true"><use href="#i-shield"></use></svg>只存草稿，不发通知</span>
+        <span><svg aria-hidden="true"><use href="#i-refresh"></use></svg>配置本地记忆，下次自动带出</span>
+        <span><svg aria-hidden="true"><use href="#i-clock"></use></svg>2 分钟超时自动解锁</span>
+      </div>
+    </div>
+
+    <div class="hero-visual" aria-label="脚本配置对话框示意">
+      <div class="browser-shell">
+        <div class="browser-bar">
+          <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="browser-url">oa.epoint.com.cn/epointoa9/frame/fui/pages/themes/aide/aide</span>
+        </div>
+        <div class="mock-panel">
+          <div class="mock-head">
+            <div>
+              <h2>周例会配置确认</h2>
+              <p>核对以下字段后执行，脚本会按顺序走完 7 步</p>
+            </div>
+            <span class="pill"><svg aria-hidden="true"><use href="#i-check"></use></svg>已记住上次配置</span>
+          </div>
+          <dl class="mock-form">
+            <div class="mock-row"><dt>会议日期</dt><dd>2026-11-26（周四）<span class="tag">自动推算</span></dd></div>
+            <div class="mock-row"><dt>会议期次</dt><dd>第 48 期</dd></div>
+            <div class="mock-row"><dt>会议名称</dt><dd class="mono">研发4部-1组周例会-2026年第48期-1126</dd></div>
+            <div class="mock-row"><dt>会议形式</dt><dd>线上会议<span class="tag">线下不写腾讯会议</span></dd></div>
+            <div class="mock-row"><dt>议题名称</dt><dd>本周工作情况同步</dd></div>
+            <div class="mock-row"><dt>参会人员</dt><dd>章立、李静、王强、周敏、…（共 9 人）</dd></div>
+          </dl>
+          <div class="mock-actions">
+            <span class="mock-btn cancel">取消</span>
+            <span class="mock-btn ok">确认执行</span>
+          </div>
+          <div class="toast">
+            <div class="toast-line"><b>第 3 / 7 步 · 填写会议信息</b><span>执行中</span></div>
+            <div class="bar"><i></i></div>
+          </div>
+          <p class="mock-note">界面示意，字段数值为示例</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 数据条 ===== -->
+  <section class="stats" aria-label="脚本概要">
+    <div><b>1 <span>个脚本</span></b><p>单文件，2,583 行，94 KB</p></div>
+    <div><b>7 <span>步流程</span></b><p>从验证页面到保存草稿，一口气跑完</p></div>
+    <div><b>6 <span>条菜单</span></b><p>执行、查状态、看日志、清锁、重置、诊断</p></div>
+    <div><b>4 <span>处核对</span></b><p>名称 / 人员 / 议题 / 腾讯会议信息</p></div>
+  </section>
+
+  <!-- ===== 核心能力 ===== -->
+  <section class="features" id="features">
+    <div class="section-heading">
+      <p class="kicker">Features</p>
+      <h2>六大核心能力</h2>
+      <p>不是把表单填满的宏，而是把「点开、勾选、回读、保存」这一整套动作做成可复用的流程。</p>
+    </div>
+    <div class="feature-grid">
+      <article class="feature-card">
+        <span class="feature-icon"><svg aria-hidden="true"><use href="#i-bolt"></use></svg></span>
+        <h3>一键创建</h3>
+        <p>从打开会议看板到保存草稿全自动，共 7 步。中间不用你点任何按钮，进度在右上角实时走。</p>
+        <ul>
+          <li>菜单「立即执行创建周例会」触发</li>
+          <li>先弹配置对话框，核对后再动手</li>
+          <li>执行中可随时查看状态与日志</li>
+        </ul>
+      </article>
+      <article class="feature-card">
+        <span class="feature-icon"><svg aria-hidden="true"><use href="#i-calendar"></use></svg></span>
+        <h3>智能推算</h3>
+        <p>自动算出下一个周四与会议期次，按模板拼出会议名称；改日期，名称与期次跟着一起变。</p>
+        <ul>
+          <li>默认下一个周四，可手改</li>
+          <li>期次按内置基准每期 +1</li>
+          <li>名称格式 <b>部门-组周例会-年第N期-MMDD</b></li>
+        </ul>
+      </article>
+      <article class="feature-card">
+        <span class="feature-icon"><svg aria-hidden="true"><use href="#i-users"></use></svg></span>
+        <h3>人员选择</h3>
+        <p>按姓名去 OA 人员弹窗勾选，并把结果同步写回「参会人员」与「列席人员」两行，保证两边名单一致。</p>
+        <ul>
+          <li>姓名 → GUID 映射，缺的可补</li>
+          <li>人员字段写入后回读校验</li>
+          <li>离职人员自动从名单剔除（v1.6.1）</li>
+        </ul>
+      </article>
+      <article class="feature-card">
+        <span class="feature-icon"><svg aria-hidden="true"><use href="#i-refresh"></use></svg></span>
+        <h3>配置记忆</h3>
+        <p>会议名称、形式、议题、人员等配置存在浏览器本地，下次打开对话框自动带出，不用每周重填。</p>
+        <ul>
+          <li>存于篡改猴 GM 存储，不上传</li>
+          <li>菜单「重置本地配置」可恢复默认</li>
+          <li>记住的旧名单也会剔除离职人员</li>
+        </ul>
+      </article>
+      <article class="feature-card">
+        <span class="feature-icon"><svg aria-hidden="true"><use href="#i-memo"></use></svg></span>
+        <h3>执行反馈</h3>
+        <p>右上角进度提示 + 可滚动日志面板，成功弹结果面板并倒计时关闭，失败则保留现场方便排障。</p>
+        <ul>
+          <li>日志前缀统一 <b>[OA-Weekly]</b></li>
+          <li>最近 20 条日志在页面内直接看</li>
+          <li>失败面板不自动关闭</li>
+        </ul>
+      </article>
+      <article class="feature-card">
+        <span class="feature-icon"><svg aria-hidden="true"><use href="#i-flow"></use></svg></span>
+        <h3>团队可复用</h3>
+        <p>换团队、换模板只改脚本顶部 <b>CONFIG</b>，流程与选择器不动；同一套 OA 的部门可直接复制使用。</p>
+        <ul>
+          <li>会议名称模板、模板 GUID、期次基准</li>
+          <li>人员名单与姓名 GUID 映射</li>
+          <li>腾讯会议信息模板可整段替换</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== 执行流程 ===== -->
+  <section class="flow section-band" id="flow">
+    <div class="section-heading">
+      <p class="kicker">Workflow</p>
+      <h2>七步执行流程</h2>
+      <p>每周重复的那一段，脚本替你做。任何一步出问题都会停在原地并写进日志，不会留下半成品草稿。</p>
+    </div>
+    <div class="flow-track">
+      <div class="flow-step"><span>01</span><svg aria-hidden="true"><use href="#i-shield"></use></svg><h3>验证页面</h3><p>确认在 OA 首页、已登录，否则提示并退出。</p></div>
+      <div class="flow-step"><span>02</span><svg aria-hidden="true"><use href="#i-list"></use></svg><h3>打开会议看板</h3><p>进入统一会议 / 我的会议，定位「新增会议」入口。</p></div>
+      <div class="flow-step"><span>03</span><svg aria-hidden="true"><use href="#i-plus"></use></svg><h3>新增会议</h3><p>打开会议表单 iframe，等待模板加载完成。</p></div>
+      <div class="flow-step"><span>04</span><svg aria-hidden="true"><use href="#i-memo"></use></svg><h3>填写会议信息</h3><p>写入名称、日期、起止时间、形式与腾讯会议信息。</p></div>
+      <div class="flow-step"><span>05</span><svg aria-hidden="true"><use href="#i-users"></use></svg><h3>选择人员</h3><p>按姓名勾选参会 / 列席，并回写两行隐藏字段。</p></div>
+      <div class="flow-step"><span>06</span><svg aria-hidden="true"><use href="#i-check"></use></svg><h3>新增议题</h3><p>选标签、填议题名称与内容，被异步覆盖就重写。</p></div>
+      <div class="flow-step"><span>07</span><svg aria-hidden="true"><use href="#i-save"></use></svg><h3>保存草稿</h3><p>保存并回读草稿列表，弹出结果面板与最近日志。</p></div>
+    </div>
+    <p class="flow-note">
+      脚本到<b>「保存草稿」</b>为止：不提交、不通知参会人、不改任何他人数据。
+      草稿确认无误后，仍由你在 OA 里手动提交——流程的最后一公里，留给人。
+    </p>
+  </section>
+
+  <!-- ===== 使用手册 ===== -->
+  <section class="manual" id="manual">
+    <div class="section-heading">
+      <p class="kicker">Manual</p>
+      <h2>使用手册</h2>
+      <p>装一次，之后每周点两下：点菜单、点确认。剩下的核对，只看四处。</p>
+    </div>
+
+    <div class="manual-grid">
+      <article class="manual-card">
+        <header>
+          <span class="manual-icon"><svg aria-hidden="true"><use href="#i-download"></use></svg></span>
+          <h3>安装（3 步）</h3>
+        </header>
+        <ol class="steps">
+          <li><span>1</span><p>浏览器安装 <b>篡改猴（Tampermonkey）</b> 扩展，Chrome / Edge 均可。</p></li>
+          <li><span>2</span><p>把 <b>oa-weekly-meeting.user.js</b> 拖进浏览器窗口，弹出安装页后点「安装」；或「添加新脚本…」粘贴全文保存。</p></li>
+          <li><span>3</span><p>确认脚本开关为 <b>已启用</b>。脚本只在 OA 首页生效，其它页面不加载。</p></li>
+        </ol>
+      </article>
+
+      <article class="manual-card">
+        <header>
+          <span class="manual-icon"><svg aria-hidden="true"><use href="#i-bolt"></use></svg></span>
+          <h3>首次执行（4 步）</h3>
+        </header>
+        <ol class="steps">
+          <li><span>1</span><p>登录 OA，停留在 <b>OA 首页</b>，标签页保持打开。</p></li>
+          <li><span>2</span><p>点篡改猴图标 → 菜单「<b>立即执行创建周例会</b>」。</p></li>
+          <li><span>3</span><p>在「周例会配置确认」里核对字段，点「<b>确认执行</b>」。</p></li>
+          <li><span>4</span><p>右上角出现进度提示，跑完弹出成功 / 失败面板。</p></li>
+        </ol>
+      </article>
+
+      <article class="manual-card">
+        <header>
+          <span class="manual-icon"><svg aria-hidden="true"><use href="#i-check-circle"></use></svg></span>
+          <h3>结果核对（4 处）</h3>
+        </header>
+        <ol class="steps">
+          <li><span>1</span><p>到「我的会议 → 会议列表（草稿）」，核对<b>名称、日期、形式、会议室</b>。</p></li>
+          <li><span>2</span><p>核对 <b>参会人员</b> 与 <b>列席人员</b> 是否就是配置的那批人。</p></li>
+          <li><span>3</span><p>核对<b>议题名称与议题内容</b>，标签是否选对。</p></li>
+          <li><span>4</span><p>线上会议时，确认议题内容里带上了<b>腾讯会议信息</b>。</p></li>
+        </ol>
+      </article>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>配置字段</th><th>默认值</th><th>说明</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>会议日期</td><td class="mono">下一个周四</td><td>改动后会议名称与期次自动跟着变，起止时间一起写入。</td></tr>
+          <tr><td>会议期次</td><td class="mono">按基准推算</td><td>以某天为第 N 期，之后每周 +1；可手改。</td></tr>
+          <tr><td>会议名称</td><td class="mono">部门-组周例会-年份第N期-MMDD</td><td>按 <b>CONFIG.meeting.nameTemplate</b> 生成，可手改。</td></tr>
+          <tr><td>会议形式</td><td class="mono">线上会议</td><td>选线下时不写入腾讯会议信息；新增议题前必须已选会议室。</td></tr>
+          <tr><td>腾讯会议信息</td><td class="mono">主题 / 时间 / 链接 / 会议号 / 邀请人</td><td>线上会议时追加到「议题内容」。</td></tr>
+          <tr><td>议题名称</td><td class="mono">本周工作情况同步</td><td>标签 <b>1</b>=ST议题、<b>2</b>=AT议题、<b>0</b>=其他。</td></tr>
+          <tr><td>参会人员</td><td class="mono">姓名列表</td><td>多人用「、」或逗号分隔，按姓名去 <b>participantGuids</b> 取 GUID。</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>菜单命令</th><th>用途</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><b>立即执行创建周例会</b></td><td>打开配置对话框并执行完整流程。</td></tr>
+          <tr><td><b>查看执行状态</b></td><td>查看是否在执行、执行到第几步。</td></tr>
+          <tr><td><b>查看执行日志</b></td><td>弹出最近 20 条日志，页面内可滚动（排障用）。</td></tr>
+          <tr><td><b>清除运行锁</b></td><td>脚本异常中断后一直提示「执行中」时清锁；也有 2 分钟超时自动解锁。</td></tr>
+          <tr><td><b>重置本地配置</b></td><td>清掉记住的配置，回到脚本内置默认值。</td></tr>
+          <tr><td><b>诊断会议表单</b></td><td>打开表单转储字段后关闭，不产生草稿。</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="faq">
+      <details>
+        <summary>提示「脚本正在执行中」，但我并没有在跑？<svg aria-hidden="true"><use href="#i-plus"></use></svg></summary>
+        <div class="faq-body">菜单点「<b>清除运行锁</b>」。脚本也有 2 分钟超时自动解锁；清锁后再执行一次即可。</div>
+      </details>
+      <details>
+        <summary>某一步报「未找到元素 / 超时」？<svg aria-hidden="true"><use href="#i-plus"></use></svg></summary>
+        <div class="faq-body">多半是 OA 页面结构或会议模板变了。先用「查看执行日志」定位失败步骤与诊断信息，再对照脚本里 <code>CONFIG.selectors</code> 调整选择器或模板配置。</div>
+      </details>
+      <details>
+        <summary>人员没写上，或只写上了一部分？<svg aria-hidden="true"><use href="#i-plus"></use></svg></summary>
+        <div class="faq-body">
+          脚本按「姓名 → GUID」写入，日志会打印 <code>已写入人员字段 seatnames（N 人）</code> 与回读值。
+          提示「取不到 GUID」就补齐 <code>CONFIG.participantGuids</code>；GUID 可在「新增会议」页手动选一次人员后，从 <code>#seatnames$value</code> 隐藏值读取。
+          姓名要与 OA 通讯录完全一致（含异体字）。
+        </div>
+      </details>
+      <details>
+        <summary>议题名称在草稿里是空的？<svg aria-hidden="true"><use href="#i-plus"></use></svg></summary>
+        <div class="faq-body">议题编辑页会异步回填表单，脚本已做「写入 → 回读 → 被覆盖就重写」，日志会打印 <code>议题字段回填</code>。若仍为空，请把日志发出来。</div>
+      </details>
+      <details>
+        <summary>换人、换会议室、换模板怎么办？<svg aria-hidden="true"><use href="#i-plus"></use></svg></summary>
+        <div class="faq-body">
+          只有<b>同一套 OA</b>（域名、版本一致）才能直接复用选择器，其余改动集中在脚本顶部 <code>CONFIG</code>：
+          会议名称模板、会议类型、模板 GUID、期次基准、腾讯会议模板、人员名单与 GUID 映射。
+          改完保存即可，流程代码不用动。
+        </div>
+      </details>
+      <details>
+        <summary>人员离职后，为什么删了名字还照样写进会议？<svg aria-hidden="true"><use href="#i-plus"></use></svg></summary>
+        <div class="faq-body">
+          因为对话框优先带出浏览器里记住的旧名单，代码里的新名单读不到。v1.6.1 起把离职人员登记到 <code>CONFIG.departedParticipants</code>，
+          代码名单与记住的旧名单都会被自动剔除，日志会打印「参会人员名单中已剔除离职人员: XXX」。
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <!-- ===== 下载 ===== -->
+  <section class="download section-band" id="download">
+    <div class="section-heading">
+      <p class="kicker">Download</p>
+      <h2>下载与安装</h2>
+      <p>一个脚本、一份说明书、两支演示片。全部同源下载，不需要账号，也没有安装程序。</p>
+    </div>
+
+    <div class="download-grid">
+      <article class="download-card primary">
+        <div class="download-top">
+          <h3>周例会自动化脚本</h3>
+          <span class="pill"><svg aria-hidden="true"><use href="#i-check"></use></svg>最新版</span>
+        </div>
+        <span class="ver">oa-weekly-meeting.user.js · V1.6.1</span>
+        <p class="meta"><strong>94 KB</strong> · 2,583 行 · 单文件 · 2026-10-19</p>
+        <ul>
+          <li>篡改猴拖拽安装，或复制全文手动安装</li>
+          <li>只在 OA 首页加载，其它页面零影响</li>
+          <li>含 v1.6.1 离职人员自动剔除</li>
+        </ul>
+        <a class="button button-primary" href="code/oa-weekly-meeting.user.js" download>
+          <svg aria-hidden="true"><use href="#i-download"></use></svg>
+          <span>下载脚本</span>
+        </a>
+      </article>
+
+      <article class="download-card">
+        <div class="download-top">
+          <h3>使用指南</h3>
+        </div>
+        <span class="ver">使用指南.html · 单页版</span>
+        <p class="meta"><strong>34 KB</strong> · 图文说明 · 可离线打开</p>
+        <ul>
+          <li>安装、首次使用、结果核对</li>
+          <li>菜单命令与常见问题</li>
+          <li>给其它团队的适配清单</li>
+        </ul>
+        <a class="button button-ghost" href="docs/使用指南.html" target="_blank" rel="noopener">
+          <svg aria-hidden="true"><use href="#i-file"></use></svg>
+          <span>打开使用指南</span>
+        </a>
+      </article>
+
+      <article class="download-card">
+        <div class="download-top">
+          <h3>演示与安装视频</h3>
+        </div>
+        <span class="ver">功能演示.mp4 · 脚本安装.mp4</span>
+        <p class="meta"><strong>4.1 MB</strong> + <strong>0.9 MB</strong> · 1080p</p>
+        <ul>
+          <li>完整执行过程与结果面板</li>
+          <li>从装篡改猴到启用脚本</li>
+          <li>不依赖任何外链播放器</li>
+        </ul>
+        <a class="button button-ghost" href="#videos">
+          <svg aria-hidden="true"><use href="#i-video"></use></svg>
+          <span>在页面内观看</span>
+        </a>
+      </article>
+    </div>
+
+    <div class="videos" id="videos">
+      <figure class="video-card">
+        <video controls playsinline preload="metadata" src="docs/功能演示.mp4"></video>
+        <figcaption><b>功能演示</b><span>从点菜单到草稿生成，完整跑一遍 7 步流程</span></figcaption>
+      </figure>
+      <figure class="video-card">
+        <video controls playsinline preload="metadata" src="docs/脚本安装.mp4"></video>
+        <figcaption><b>脚本安装</b><span>先装篡改猴扩展，再把脚本拖进浏览器</span></figcaption>
+      </figure>
+    </div>
+
+    <p class="dl-note">
+      <b>读不了 .user.js：</b>用浏览器打开脚本文件后全选复制，粘贴进「添加新脚本…」同样可用。
+      <b>没有安装包：</b>脚本不写注册表、不安服务，卸载就在篡改猴里关掉或删除。
+      <b>数据不出本机：</b>配置只存在浏览器本地，脚本不联网、不上传任何会议内容。
+    </p>
+  </section>
+
+  <!-- ===== 版本 ===== -->
+  <section class="changelog" id="changelog">
+    <div class="section-heading">
+      <p class="kicker">Changelog</p>
+      <h2>最近四个版本</h2>
+      <p>每个版本都来自一次真实使用中的问题：日期被表单默认值覆盖、旧名单盖掉新名单、长日志被 alert 截断。</p>
+    </div>
+    <div class="timeline">
+      <article class="ver-card">
+        <div class="ver-tag"><b>V1.6.1</b><time datetime="2026-10-19">2026-10-19</time></div>
+        <span class="pill">当前版本</span>
+        <h3>人员离职处理</h3>
+        <p>新增 <b>CONFIG.departedParticipants</b>，代码名单与记住的旧名单都会被自动剔除，日志打印被剔除的姓名。</p>
+      </article>
+      <article class="ver-card">
+        <div class="ver-tag"><b>V1.6.0</b><time datetime="2026-10-19">2026-10-19</time></div>
+        <h3>会议日期与时间修正</h3>
+        <p>草稿不再落成「创建时刻」，显式写入配置的日期与起止时间；日志改为页面内可滚动面板；新增诊断菜单。</p>
+      </article>
+      <article class="ver-card">
+        <div class="ver-tag"><b>V1.5.2</b><time>早于 v1.6.0</time></div>
+        <h3>交互完善</h3>
+        <p>成功面板 10 秒倒计时自动关闭，失败面板保留；对话框防重复弹出、支持 ESC 取消。</p>
+      </article>
+      <article class="ver-card">
+        <div class="ver-tag"><b>V1.5.1</b><time>早于 v1.6.0</time></div>
+        <h3>改为手动触发</h3>
+        <p>关闭测试期临时打开的自动执行（autoRun=false），统一走菜单「立即执行创建周例会」。</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ===== 关于 ===== -->
+  <section class="about section-band" id="about">
+    <div class="about-layout">
+      <div>
+        <h2>为什么是油猴脚本，而不是一个系统</h2>
+        <p>
+          周例会创建这件事，难点不在业务逻辑，而在 <b>OA 页面里那一串重复动作</b>：找入口、等 iframe、填名称、勾人、加议题、保存。
+          做一个后台系统要申请权限、对接接口、走上线流程；而脚本直接运行在你已经登录的页面上，<b>不碰接口、不拿账号、不留服务端</b>。
+        </p>
+        <p>
+          代价也很明确：它依赖 OA 的页面结构，模板一改就可能失效——所以脚本把选择器、模板 GUID、人员映射全部收进 <b>CONFIG</b>，
+          并且把每一步的失败都写进日志，让你能在两分钟内判断是「配置变了」还是「被限权了」。
+        </p>
+        <p>
+          这一页本身也照同一套原则做：<b>单文件、零外部依赖、下载走同源相对路径</b>。没有网络字体、没有第三方 CDN、没有统计脚本，
+          断网时除了视频，其余内容照常可读。
+        </p>
+      </div>
+      <div class="about-facts">
+        <div class="fact"><b>能做什么</b><span>新增会议、填信息、选人员、加议题、保存草稿。</span></div>
+        <div class="fact"><b>不做什么</b><span>不发会议通知、不提交、不改别人创建的数据、不读取会议内容。</span></div>
+        <div class="fact"><b>依赖什么</b><span>篡改猴扩展 + 同一套新点 OA（域名与版本一致）。</span></div>
+        <div class="fact"><b>怎么排障</b><span>菜单「查看执行日志」，按 <b>[OA-Weekly]</b> 在控制台过滤；提供版本号、日志、截图三样。</span></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-brand">
+      <span class="brand-mark" aria-hidden="true"><svg><use href="#i-list"></use></svg></span>
+      <div>
+        <b>新点 OA 周例会自动化</b><br>
+        <span>V1.6.1 · 2026-10-19</span>
+      </div>
+    </div>
+    <nav class="footer-nav" aria-label="页脚导航">
+      <a href="#features">核心能力</a>
+      <a href="#flow">执行流程</a>
+      <a href="#manual">使用手册</a>
+      <a href="#download">下载</a>
+      <a href="#changelog">版本记录</a>
+    </nav>
+  </div>
+  <div class="footer-bottom">
+    <span>适用系统：新点 OA epointoa9（统一会议 / 我的会议）</span>
+    <span class="selfcheck"><svg aria-hidden="true"><use href="#i-check-circle"></use></svg>自检通过：零外部依赖 · 同源下载 · 无统计脚本</span>
+    <span>页面与脚本同源托管，可直接部署为静态站点</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var header = document.querySelector('[data-header]');
+  var menuBtn = document.querySelector('[data-menu-button]');
+  var mobileNav = document.querySelector('[data-mobile-nav]');
+
+  function onScroll() {
+    if (!header) return;
+    header.classList.toggle('is-scrolled', window.scrollY > 8);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  if (menuBtn && mobileNav) {
+    menuBtn.addEventListener('click', function () {
+      var open = document.body.classList.toggle('nav-open');
+      menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+    mobileNav.addEventListener('click', function (e) {
+      if (e.target.tagName === 'A') {
+        document.body.classList.remove('nav-open');
+        menuBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  // 关闭移动导航：点击遮罩区（页面主体）或按 ESC
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && document.body.classList.contains('nav-open')) {
+      document.body.classList.remove('nav-open');
+      if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
+    }
+  });
+})();
+</script>
+</body>
+</html>
